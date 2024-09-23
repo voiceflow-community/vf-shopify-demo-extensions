@@ -428,11 +428,12 @@ export const ProductUploadExtension = {
           gap: 10px;
         }
         .upload-container .upload-option {
-          margin-left: 0px;
+          /* margin-left: 0px; */
+          margin-top: 15px;
           padding: 10px 15px;
-          background-color: #CF0A2C !important;
-          color: white !important;
-          border: none;
+          background-color: white !important;
+          color: #CF0A2C !important;
+          border: 1px solid #CF0A2C;
           border-radius: 8px;
           cursor: pointer;
           transition: all 0.3s ease;
@@ -440,11 +441,12 @@ export const ProductUploadExtension = {
           flex-direction: row;
           align-items: center;
           justify-content: center;
-          width: 78px;
+          width: 90px;
           text-align: center;
         }
         .upload-container .upload-option:hover {
-          background-color: #CF0A2C !important; // Force darker blue on hover
+          color: white !important;
+          background-color: #CF0A2C !important;
         }
         .upload-container .upload-option svg {
           width: 20px;
@@ -495,9 +497,9 @@ export const ProductUploadExtension = {
         #capture-button {
           margin-top: 10px;
           padding: 10px 20px;
-          background-color: #CF0A2C !important;
-          color: white !important;
-          border: none;
+          background-color: white !important;
+          color: #CF0A2C !important;
+          border: 1px solid #CF0A2C;
           border-radius: 8px;
           cursor: pointer;
           transition: background-color 0.3s ease;
@@ -506,7 +508,8 @@ export const ProductUploadExtension = {
           text-align: center;
         }
         #capture-button:hover {
-          background-color: #CF0A1A;
+          background-color: #CF0A2C !important;
+          color: white !important;
         }
         .upload-status {
           text-align: center;
