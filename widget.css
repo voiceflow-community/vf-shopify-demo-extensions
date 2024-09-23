@@ -1,0 +1,47 @@
+.vfrc-timestamp {
+  display: none;
+}
+
+.vfrc-message {
+  margin-left: 0px !important;
+  margin-right: -10px !important;
+}
+
+.vfrc-system-response--list {
+  margin-right: 40px !important;
+}
+
+.vfrc-system-response--message {
+  margin-right: 0px !important;
+}
+
+.vfrc-system-response .vfrc-avatar {
+  display: none;
+}
+
+.vfrc-system-response--indicator {
+  display: none !important;
+}
+
+.vfrc-user-response--row {
+  margin-right: 0px !important;
+  flex-direction: row-reverse !important;
+  margin-right: 10px !important;
+}
+
+.vfrc-system-response--actions {
+  padding-left: 20px !important;
+  padding-right: 10px !important;
+  margin-left: 0px !important;
+  margin-right: 0px !important;
+  flex-direction: column !important;
+  align-content: stretch !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  margin-left: 0px !important;
+}
+
+[class^="vfrc-message--extension-"],
+[class*=" vfrc-message--extension-"] {
+  padding: 0px !important;
+}

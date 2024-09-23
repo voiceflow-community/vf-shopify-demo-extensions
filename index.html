@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Chat Widget | Extensions Demo</title>
+    <style>
+      body {
+        background-color: #f9f9f9;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="voiceflow-chat-frame"></div>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.3.1/dist/jsQR.min.js"></script>
+    <script type="module">
+      //import { FeedbackExtension } from 'https://feedback.proxy-voiceflow.com/extensions.js';
+
+      import { EmailVerificationExtension, ProductUploadExtension, QRCodeScannerExtension, ShopifyOrderListExtension, WaitingAnimationExtension } from 'http://localhost:3210/extensions.js';
+      (function (d, t) {
+        var v = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+        v.onload = function () {
+          window.voiceflow.chat.load({
+            verify: { projectID: '66de3de8e86178552f1975e9' },
+            url: 'https://general-runtime.voiceflow.com',
+            versionID: 'development',
+            user: {
+              name: 'Demo User',
+            },
+            autostart: true,
+            allowDangerousHTML: true,
+            assistant: {
+              stylesheet: "http://localhost:3210/widget.css",
+              extensions: [
+                EmailVerificationExtension,
+                ProductUploadExtension,
+                QRCodeScannerExtension,
+                ShopifyOrderListExtension,
+                WaitingAnimationExtension
+              ],
+            },
+          });
+        };
+        v.src = 'https://cdn.voiceflow.com/widget/bundle.mjs';
+        v.type = 'text/javascript';
+        s.parentNode.insertBefore(v, s);
+      })(document, 'script');
+    </script>
+  </body>
+</html>
