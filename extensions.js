@@ -1,4 +1,102 @@
 const SERVER_URL = 'http://localhost:3000'
+window.vf_done = false
+
+export const GiftCardDisplayExtension = {
+  name: 'GiftCardDisplay',
+  type: 'response',
+  match: ({ trace }) =>
+    trace.type === 'ext_giftCardDisplay' ||
+    trace.payload.name === 'ext_giftCardDisplay',
+  render: ({ trace, element }) => {
+    const amount = trace.payload.amount || '20'
+    const code = (trace.payload.code || 'G9FD5FEG8HDC8A94').toUpperCase()
+    console.log(code)
+    const formattedCode = code.match(/.{1,4}/g).join(' ')
+    console.log(formattedCode)
+    window.vf_done = true
+    const giftCardContainer = document.createElement('div')
+    giftCardContainer.innerHTML = `
+      <style>
+        .vfrc-message--extension-GiftCardDisplay {
+          background-color: transparent !important;
+          background: none !important;
+        }
+        .gift-card-container {
+          font-family: Arial, sans-serif;
+          max-width: 400px;
+          margin: 0 auto;
+          padding: 20px;
+          border: 1px solid #e0e0e0;
+          border-radius: 8px;
+          background-color: #fff;
+          text-align: center;
+          position: relative;
+        }
+        .gift-card-image {
+          width: 100%;
+          max-width: 400px;
+          border-radius: 8px;
+          position: relative;
+        }
+        .gift-card-amount {
+          width: 100%;
+          max-width: 350px;
+          font-size: 50px;
+          font-weight: bold;
+          color: #fff;
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        .gift-card-code {
+          font-size: 18px;
+          font-weight: bold;
+          margin-bottom: 10px;
+          background-color: none;
+          padding: 10px;
+          border-radius: 4px;
+          display: inline-block;
+        }
+        .copy-button {
+          display: inline-block;
+          padding: 10px 20px;
+          font-size: 16px;
+          color: #CF0A2C !important;
+          background-color: #fff !important;
+          border: 1px solid #CF0A2C !important;
+          border-radius: 4px;
+          cursor: pointer;
+          transition: background-color 0.3s ease;
+        }
+        .copy-button:hover {
+          background-color: #CF0A2C !important;
+          color: #fff !important;
+        }
+      </style>
+      <div class="gift-card-container">
+      <div class="gift-card-image">
+        <img src="https://s3.amazonaws.com/com.voiceflow.studio/share/card/card.jpg" alt="Gift Card" class="gift-card-image">
+        <div class="gift-card-amount">$${amount}</div>
+        </div>
+        <div class="gift-card-code" id="gift-card-code">${formattedCode}</div>
+        <button class="copy-button" id="copy-button">Copy Code</button>
+      </div>
+    `
+
+    const copyButton = giftCardContainer.querySelector('#copy-button')
+    const giftCardCode = giftCardContainer.querySelector('#gift-card-code')
+
+    copyButton.addEventListener('click', () => {
+      navigator.clipboard.writeText(giftCardCode.textContent).then(() => {
+        alert('Gift card code copied to clipboard!')
+      })
+    })
+
+    element.appendChild(giftCardContainer)
+  },
+}
 
 export const WaitingAnimationExtension = {
   name: 'WaitingAnimation',
@@ -6,9 +104,12 @@ export const WaitingAnimationExtension = {
   match: ({ trace }) =>
     trace.type === 'ext_waitingAnimation' ||
     trace.payload.name === 'ext_waitingAnimation',
-  render: ({ trace, element }) => {
+  render: async ({ trace, element }) => {
     const text = trace.payload?.text || 'Please wait...'
     const delay = trace.payload?.delay || 3000
+    window.vf_done = true
+
+    await new Promise((resolve) => setTimeout(resolve, 250))
 
     const waitingContainer = document.createElement('div')
     waitingContainer.innerHTML = `
@@ -70,9 +171,22 @@ export const WaitingAnimationExtension = {
     window.voiceflow.chat.interact({
       type: 'continue',
     })
+
+    let intervalCleared = false
+    window.vf_done = false
+    const checkDoneInterval = setInterval(() => {
+      if (window.vf_done) {
+        clearInterval(checkDoneInterval)
+        waitingContainer.style.display = 'none'
+        window.vf_done = false
+      }
+    }, 100)
+
     setTimeout(() => {
-      //element.removeChild(waitingContainer)
-      waitingContainer.style.display = 'none'
+      if (!intervalCleared) {
+        clearInterval(checkDoneInterval)
+        waitingContainer.style.display = 'none'
+      }
     }, delay)
   },
 }
@@ -84,7 +198,15 @@ export const ShopifyOrderListExtension = {
     trace.type === 'ext_shopifyOrderList' ||
     trace.payload.name === 'ext_shopifyOrderList',
   render: ({ trace, element }) => {
+    window.vf_done = true
     const orders = trace.payload.orders || []
+    const orderIds = trace.payload.orderIds || []
+
+    const numericOrderIds = orderIds.map((id) => Number(id))
+
+    const filteredOrders = numericOrderIds.length
+      ? orders.filter((order) => numericOrderIds.includes(order.id))
+      : orders
 
     const formatDate = (dateString) => {
       const date = new Date(dateString)
@@ -171,7 +293,7 @@ export const ShopifyOrderListExtension = {
         }
 
       </style>
-      ${orders
+      ${filteredOrders
         .map(
           (order, index) => `
         <div class="vfrc-order-item" data-order-id="${order.id}">
@@ -949,5 +1071,262 @@ export const EmailVerificationExtension = {
 
     element.appendChild(verificationContainer)
     codeInputs[0].focus()
+  },
+}
+
+export const ReturnRequestExtension = {
+  name: 'ReturnRequest',
+  type: 'response',
+  match: ({ trace }) =>
+    trace.type === 'ext_returnRequest' ||
+    trace.payload.name === 'ext_returnRequest',
+  render: ({ trace, element }) => {
+    window.vf_done = true
+    console.log('trace.payload', trace.payload)
+    const { order_id, items } = trace.payload
+    const defaultImageURL =
+      'https://0e3db0-b3.myshopify.com/cdn/shop/files/NewBalance_M1000V1.png?v=1726826154&width=120'
+
+    const returnRequestContainer = document.createElement('div')
+    returnRequestContainer.innerHTML = `
+      <style>
+        .vfrc-message--extension-ReturnRequest {
+          background-color: transparent !important;
+          background: none !important;
+        }
+        .return-request-container {
+          font-family: Arial, sans-serif;
+          max-width: 400px;
+          margin: 0 auto;
+          padding: 20px;
+          border: 1px solid #e0e0e0;
+          border-radius: 8px;
+          background-color: #fff;
+        }
+        .return-request-container.disabled {
+          pointer-events: none;
+          opacity: 0.6;
+        }
+        .return-request-title {
+          font-size: 20px;
+          font-weight: bold;
+          margin-bottom: 10px;
+        }
+        .order-number {
+          font-size: 16px;
+          margin-bottom: 20px;
+        }
+        .return-item {
+          display: flex;
+          flex-direction: column;
+          margin-bottom: 20px;
+          padding-bottom: 20px;
+          border-bottom: 1px solid #e0e0e0;
+        }
+        .return-item:last-child {
+          border-bottom: none;
+        }
+          .item-content {
+          display: flex;
+          align-items: flex-start;
+        }
+        .item-image {
+          width: 70px;
+          height: 50px;
+          background-color: #fff;
+          margin-right: 15px;
+          background-size: cover;
+          background-position: center;
+          border-radius: 8%;
+          object-fit: cover;
+        }
+        .item-details {
+          flex-grow: 1;
+        }
+        .item-name {
+          font-weight: bold;
+          margin-bottom: 5px;
+        }
+        .item-code, .item-price {
+          font-size: 14px;
+          color: #666;
+          margin-bottom: 5px;
+        }
+        .item-price {
+          font-weight: bold;
+        }
+        .item-checkbox {
+          margin-left: 10px;
+          margin-top: 5px;
+        }
+        .item-checkbox input[type="checkbox"] {
+          appearance: none;
+          width: 20px;
+          height: 20px;
+          border: 2px solid #999;
+          border-radius: 50%;
+          outline: none;
+          cursor: pointer;
+        }
+        .item-checkbox input[type="checkbox"]:checked {
+          background-color: #CF0A2C;
+          border-color: #CF0A2C;
+        }
+        .item-checkbox input[type="checkbox"]:checked::after {
+          content: '✓';
+          display: block;
+          text-align: center;
+          color: white;
+          font-size: 14px;
+          line-height: 20px;
+        }
+        .refund-reason {
+          margin-top: 10px;
+          display: none;
+          width: 100%;
+        }
+        .refund-reason input {
+          width: 100%;
+          padding: 8px;
+          border: 1px solid #eee;
+          border-radius: 4px;
+          font-size: 12px;
+          box-sizing: border-box;
+        }
+        .refund-reason input:focus {
+          border-color: #CF0A2C !important;
+          outline: none !important;
+          /* box-shadow: 0 0 0 1px rgba(207, 10, 44, 0.25) !important; */
+        }
+        .submit-button, .cancel-button {
+          display: inline-block;
+          padding: 10px 20px;
+          font-size: 16px;
+          color: #CF0A2C !important;
+          background-color: #fff !important;
+          border: 1px solid #CF0A2C !important;
+          border-radius: 4px;
+          cursor: pointer;
+          margin-right: 10px;
+        }
+          .submit-button:hover {
+          background-color: #CF0A2C !important;
+          color: #fff !important;
+        }
+        .cancel-button:hover {
+          background-color: #CF0A2C !important;
+          color: #fff !important;
+        }
+        .error-message {
+          color: #CF0A2C;
+          font-size: 12px;
+          margin-top: 5px;
+        }
+      </style>
+      <div class="return-request-container">
+        <div class="return-request-title">Return Request</div>
+        <div class="order-number">Order Number: ${order_id}</div>
+        ${items
+          .map(
+            (item, index) => `
+          <div class="return-item">
+            <div class="item-content">
+              <div class="item-image" style="background-image: url('${
+                item.imageUrl || defaultImageURL
+              }');"></div>
+              <div class="item-details">
+                <div class="item-name">${item.name}</div>
+                <div class="item-code">Product Code: ${item.product_id}</div>
+                <div class="item-price">${item.currency} ${Number(
+              item.price
+            ).toFixed(2)}</div>
+              </div>
+              <div class="item-checkbox">
+                <input type="checkbox" id="item-${index}" ${
+              item.selected ? 'checked' : ''
+            }>
+              </div>
+            </div>
+            <div class="refund-reason" id="refund-reason-${index}" ${
+              item.selected ? 'style="display: block;"' : ''
+            }>
+              <input type="text" placeholder="Please provide a reason for the return" value="${
+                item.reason || ''
+              }">
+            <div class="error-message" id="error-${index}" style="display: none;">Reason is required</div>
+            </div>
+          </div>
+        `
+          )
+          .join('')}
+        <button class="submit-button">Submit</button>
+        <button class="cancel-button">Cancel</button>
+      </div>
+    `
+
+    const checkboxes = returnRequestContainer.querySelectorAll(
+      'input[type="checkbox"]'
+    )
+    const refundReasons =
+      returnRequestContainer.querySelectorAll('.refund-reason')
+    const submitButton = returnRequestContainer.querySelector('.submit-button')
+    const cancelButton = returnRequestContainer.querySelector('.cancel-button')
+
+    checkboxes.forEach((checkbox, index) => {
+      checkbox.addEventListener('change', () => {
+        refundReasons[index].style.display = checkbox.checked ? 'block' : 'none'
+      })
+    })
+
+    submitButton.addEventListener('click', () => {
+      let isValid = true
+      const selectedItems = Array.from(checkboxes)
+        .map((checkbox, index) => {
+          const reasonInput = refundReasons[index].querySelector('input')
+          const errorMessage =
+            refundReasons[index].querySelector('.error-message')
+
+          if (checkbox.checked) {
+            if (!reasonInput.value.trim()) {
+              reasonInput.classList.add('error')
+              errorMessage.style.display = 'block'
+              isValid = false
+            } else {
+              reasonInput.classList.remove('error')
+              errorMessage.style.display = 'none'
+            }
+            return {
+              ...items[index],
+              selected: true,
+              reason: reasonInput.value,
+            }
+          }
+          return null
+        })
+        .filter(Boolean)
+
+      if (isValid) {
+        returnRequestContainer.classList.add('disabled')
+        const inputs = returnRequestContainer.querySelectorAll('input, button')
+        inputs.forEach((input) => (input.disabled = true))
+
+        submitButton.disabled = true
+        cancelButton.disabled = true
+
+        console.log('selectedItems', selectedItems)
+        window.voiceflow.chat.interact({
+          type: 'submitted',
+          payload: { selectedItems },
+        })
+      }
+    })
+
+    cancelButton.addEventListener('click', () => {
+      window.voiceflow.chat.interact({
+        type: 'cancelled',
+      })
+    })
+
+    element.appendChild(returnRequestContainer)
   },
 }
