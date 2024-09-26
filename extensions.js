@@ -1,6 +1,7 @@
 const SERVER_URL = 'http://localhost:3000'
 window.vf_done = false
 
+// This extension displays a gift card with a specified amount and code
 export const GiftCardDisplayExtension = {
   name: 'GiftCardDisplay',
   type: 'response',
@@ -10,10 +11,8 @@ export const GiftCardDisplayExtension = {
   render: ({ trace, element }) => {
     const amount = trace.payload.amount || '20'
     const code = (trace.payload.code || 'G9FD5FEG8HDC8A94').toUpperCase()
-    console.log(code)
     const formattedCode = code.match(/.{1,4}/g).join(' ')
-    console.log(formattedCode)
-    window.vf_done = true
+
     const giftCardContainer = document.createElement('div')
     giftCardContainer.innerHTML = `
       <style>
@@ -98,6 +97,8 @@ export const GiftCardDisplayExtension = {
   },
 }
 
+// This extension shows a waiting animation with customizable text and delay
+// Also checking for the vf_done value to stop/hide the animation if it's true
 export const WaitingAnimationExtension = {
   name: 'WaitingAnimation',
   type: 'response',
@@ -105,11 +106,11 @@ export const WaitingAnimationExtension = {
     trace.type === 'ext_waitingAnimation' ||
     trace.payload.name === 'ext_waitingAnimation',
   render: async ({ trace, element }) => {
+    window.vf_done = true
+    await new Promise((resolve) => setTimeout(resolve, 250))
+
     const text = trace.payload?.text || 'Please wait...'
     const delay = trace.payload?.delay || 3000
-    window.vf_done = true
-
-    await new Promise((resolve) => setTimeout(resolve, 250))
 
     const waitingContainer = document.createElement('div')
     waitingContainer.innerHTML = `
@@ -174,6 +175,7 @@ export const WaitingAnimationExtension = {
 
     let intervalCleared = false
     window.vf_done = false
+
     const checkDoneInterval = setInterval(() => {
       if (window.vf_done) {
         clearInterval(checkDoneInterval)
@@ -191,6 +193,9 @@ export const WaitingAnimationExtension = {
   },
 }
 
+// This extension triggers a "done" action,
+// typically used to signal the completion of a task
+// and hide a previous WaitingAnimation
 export const DoneAnimationExtension = {
   name: 'DoneAnimation',
   type: 'response',
@@ -199,7 +204,6 @@ export const DoneAnimationExtension = {
     trace.payload.name === 'ext_doneAnimation',
   render: async ({ trace, element }) => {
     window.vf_done = true
-
     await new Promise((resolve) => setTimeout(resolve, 250))
 
     window.voiceflow.chat.interact({
@@ -208,6 +212,7 @@ export const DoneAnimationExtension = {
   },
 }
 
+// This extension displays a list of Shopify orders with selectable items
 export const ShopifyOrderListExtension = {
   name: 'ShopifyOrderList',
   type: 'response',
@@ -215,7 +220,6 @@ export const ShopifyOrderListExtension = {
     trace.type === 'ext_shopifyOrderList' ||
     trace.payload.name === 'ext_shopifyOrderList',
   render: ({ trace, element }) => {
-    window.vf_done = true
     const orders = trace.payload.orders || []
     const orderIds = trace.payload.orderIds || []
 
@@ -231,8 +235,6 @@ export const ShopifyOrderListExtension = {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
-        //hour: '2-digit',
-        //minute: '2-digit',
       }
       return date.toLocaleDateString('en-US', options)
     }
@@ -362,6 +364,7 @@ export const ShopifyOrderListExtension = {
   },
 }
 
+// This extension provides a QR code scanner using the device's camera
 export const QRCodeScannerExtension = {
   name: 'QRCodeScanner',
   type: 'response',
@@ -521,12 +524,11 @@ export const QRCodeScannerExtension = {
             payload: { qrCodeData: code.data },
           })
 
-          // Fade out the entire container after 5 seconds
           setTimeout(() => {
             scannerContainer.classList.add('fade-out')
             setTimeout(() => {
               scannerContainer.style.display = 'none'
-            }, 500) // Match this to the fadeOut animation duration
+            }, 500)
           }, 2500)
         } else {
           requestAnimationFrame(tick)
@@ -545,7 +547,7 @@ export const QRCodeScannerExtension = {
     }
   },
 }
-
+// This extension provides a product upload feature using a file upload or webcam capture
 export const ProductUploadExtension = {
   name: 'ProductUpload',
   type: 'response',
@@ -801,7 +803,6 @@ export const ProductUploadExtension = {
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="error"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
             <p>Error during upload</p>
           `
-          // uploadOptions.style.display = 'flex'
           window.voiceflow.chat.interact({
             type: 'error',
           })
@@ -822,6 +823,7 @@ export const ProductUploadExtension = {
   },
 }
 
+// This extension handles email verification by sending a code and verifying user input
 export const EmailVerificationExtension = {
   name: 'EmailVerification',
   type: 'response',
@@ -943,7 +945,6 @@ export const EmailVerificationExtension = {
         body: JSON.stringify({ email }),
       })
       const data = await response.json()
-      console.log('TwilioVerify.sendVerificationEmail', data)
       if (!data.success) {
         if (data.maxAttemptsReached) {
           throw new Error(
@@ -985,8 +986,6 @@ export const EmailVerificationExtension = {
           })
           const data = await response.json()
           if (data.success && data.status === 'approved') {
-            //verificationMessage.textContent = 'Email verified successfully!'
-            //verificationMessage.style.color = 'green'
             codeInputs.forEach((input) => (input.disabled = true))
             window.voiceflow.chat.interact({
               type: 'verified',
@@ -1091,6 +1090,7 @@ export const EmailVerificationExtension = {
   },
 }
 
+// This extension handles return requests for a Shopify order
 export const ReturnRequestExtension = {
   name: 'ReturnRequest',
   type: 'response',
@@ -1098,8 +1098,6 @@ export const ReturnRequestExtension = {
     trace.type === 'ext_returnRequest' ||
     trace.payload.name === 'ext_returnRequest',
   render: ({ trace, element }) => {
-    window.vf_done = true
-    console.log('trace.payload', trace.payload)
     const { order_id, items } = trace.payload
     const defaultImageURL =
       'https://0e3db0-b3.myshopify.com/cdn/shop/files/NewBalance_M1000V1.png?v=1726826154&width=120'
@@ -1330,7 +1328,6 @@ export const ReturnRequestExtension = {
         submitButton.disabled = true
         cancelButton.disabled = true
 
-        console.log('selectedItems', selectedItems)
         window.voiceflow.chat.interact({
           type: 'submitted',
           payload: { selectedItems },
