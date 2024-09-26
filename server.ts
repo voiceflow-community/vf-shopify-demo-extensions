@@ -28,8 +28,8 @@ const server = serve({
       return new Response(null, { headers: corsHeaders });
     }
 
-    if (url.pathname === "/extensions.js") {
-      let content = await readFile("./extensions.js", "utf8");
+    if (url.pathname === "/scripts/extensions.js") {
+      let content = await readFile("./scripts/extensions.js", "utf8");
       content = content.replace('http://localhost:3000', SERVER_URL);
       content = content.replace('voiceflow-session-xyz', `voiceflow-session-${VOICEFLOW_PROJECT_ID}`);
       return new Response(content, {
@@ -39,8 +39,8 @@ const server = serve({
       });
     }
 
-    if (url.pathname === "/widget.css") {
-      let content = await readFile("./widget.css", "utf8");
+    if (url.pathname === "/styles/widget.css") {
+      let content = await readFile("./styles/widget.css", "utf8");
       return new Response(content, {
         headers: {
           "Content-Type": "text/css",

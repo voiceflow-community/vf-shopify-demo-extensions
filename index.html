@@ -12,7 +12,7 @@
     <div id="voiceflow-chat-frame"></div>
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.3.1/dist/jsQR.min.js"></script>
     <script type="module">
-      import { EmailVerificationExtension, ProductUploadExtension, QRCodeScannerExtension, ShopifyOrderListExtension, ReturnRequestExtension, WaitingAnimationExtension, DoneAnimationExtension, GiftCardDisplayExtension } from 'http://localhost:3210/extensions.js';
+      import { EmailVerificationExtension, ProductUploadExtension, QRCodeScannerExtension, ShopifyOrderListExtension, ReturnRequestExtension, WaitingAnimationExtension, DoneAnimationExtension, GiftCardDisplayExtension } from 'http://localhost:3000/scripts/extensions.js';
       (function (d, t) {
         var v = d.createElement(t),
           s = d.getElementsByTagName(t)[0];
@@ -27,7 +27,7 @@
             autostart: true,
             allowDangerousHTML: true,
             assistant: {
-              stylesheet: "http://localhost:3210/widget.css",
+              stylesheet: "http://localhost:3000/styles/widget.css",
               extensions: [
                 EmailVerificationExtension,
                 ProductUploadExtension,
