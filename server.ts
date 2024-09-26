@@ -2,7 +2,7 @@ import { serve } from "bun";
 import { readFile } from "fs/promises";
 import twilio from "twilio";
 
-const PORT = Bun.env.PORT ? parseInt(Bun.env.PORT) : 3208;
+const PORT = Bun.env.PORT ? parseInt(Bun.env.PORT) : 3000;
 const SERVER_URL = Bun.env.SERVER_URL || 'http://localhost:3000';
 const VOICEFLOW_API_KEY = Bun.env.VOICEFLOW_API_KEY;
 const VOICEFLOW_VERSION = Bun.env.VOICEFLOW_VERSION;
@@ -28,12 +28,22 @@ const server = serve({
       return new Response(null, { headers: corsHeaders });
     }
 
+    if (url.pathname === "/" || url.pathname === "/index.html") {
+      let content = await readFile("./index.html", "utf8");
+      content = content.replaceAll('YOUR_PROJECT_ID', VOICEFLOW_PROJECT_ID || '');
+      content = content.replaceAll('SERVER_URL', SERVER_URL || 'http://localhost:3000');
+
+      return new Response(content, {
+        headers: { "Content-Type": "text/html; charset=utf-8", ...corsHeaders }
+      });
+    }
+
     if (url.pathname === "/scripts/extensions.js") {
       let content = await readFile("./scripts/extensions.js", "utf8");
-      content = content.replace('http://localhost:3000', SERVER_URL);
+      content = content.replace('AUTO_POPULATED', SERVER_URL);
       content = content.replace('voiceflow-session-xyz', `voiceflow-session-${VOICEFLOW_PROJECT_ID}`);
       return new Response(content, {
-        headers: { "Content-Type": "application/javascript",
+        headers: { "Content-Type": "application/javascript; charset=utf-8",
         ...corsHeaders
       }
       });
@@ -43,7 +53,7 @@ const server = serve({
       let content = await readFile("./styles/widget.css", "utf8");
       return new Response(content, {
         headers: {
-          "Content-Type": "text/css",
+          "Content-Type": "text/css; charset=utf-8",
           ...corsHeaders
         }
       });

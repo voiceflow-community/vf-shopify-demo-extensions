@@ -1,4 +1,4 @@
-const SERVER_URL = 'http://localhost:3000'
+const SERVER_URL = 'AUTO_POPULATED'
 window.vf_done = false
 
 // This extension displays a gift card with a specified amount and code
