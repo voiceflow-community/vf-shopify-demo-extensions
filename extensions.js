@@ -191,6 +191,23 @@ export const WaitingAnimationExtension = {
   },
 }
 
+export const DoneAnimationExtension = {
+  name: 'DoneAnimation',
+  type: 'response',
+  match: ({ trace }) =>
+    trace.type === 'ext_doneAnimation' ||
+    trace.payload.name === 'ext_doneAnimation',
+  render: async ({ trace, element }) => {
+    window.vf_done = true
+
+    await new Promise((resolve) => setTimeout(resolve, 250))
+
+    window.voiceflow.chat.interact({
+      type: 'continue',
+    })
+  },
+}
+
 export const ShopifyOrderListExtension = {
   name: 'ShopifyOrderList',
   type: 'response',
