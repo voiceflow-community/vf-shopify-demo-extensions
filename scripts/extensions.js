@@ -1,6 +1,239 @@
 const SERVER_URL = 'AUTO_POPULATED'
 window.vf_done = false
 
+export const DemoUploadExtension = {
+  name: 'DemoUpload',
+  type: 'response',
+  match: ({ trace }) =>
+    trace.type === 'ext_demoUpload' || trace.payload.name === 'ext_demoUpload',
+  render: ({ trace, element }) => {
+    const uploadContainer = document.createElement('div')
+    uploadContainer.innerHTML = `
+      <style>
+        .vfrc-message--extension-DemoUpload {
+          background-color: transparent !important;
+          background: none !important;
+        }
+        .upload-container .upload-options {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 20px;
+          gap: 10px;
+        }
+        .upload-container .upload-option {
+          /* margin-left: 0px; */
+          margin-top: 15px;
+          padding: 10px 15px;
+          background-color: white !important;
+          color: #CF0A2C !important;
+          border: 1px solid #CF0A2C;
+          border-radius: 8px;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          justify-content: center;
+          width: 90px;
+          text-align: center;
+        }
+        .upload-container .upload-option:hover {
+          color: white !important;
+          background-color: #CF0A2C !important;
+        }
+        .upload-container .upload-option svg {
+          width: 20px;
+          height: 20px;
+          margin-right: 8px;
+          fill: currentColor;
+        }
+        .upload-container .upload-option-text {
+          font-size: 12px;
+        }
+        .my-file-upload {
+          border: 2px dashed rgba(46, 110, 225, 0.3);
+          padding: 20px;
+          text-align: center;
+          cursor: pointer;
+          display: none;
+          transition: all 0.3s ease;
+        }
+        .my-file-upload:hover {
+          background-color: rgba(46, 110, 225, 0.1);
+        }
+        #webcam-container {
+          display: none;
+        }
+        #webcam-video {
+          width: 100%;
+          max-width: 400px;
+          border-radius: 5px;
+        }
+        .webcam-error {
+          display: flex;
+          align-items: center;
+          font-size: 12px;
+          color: #666;
+          background-color: #f8f8f8;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          padding: 10px;
+          margin-top: 10px;
+        }
+        .webcam-error svg {
+          margin-right: 10px;
+          fill: #666;
+        }
+        .webcam-error p {
+          margin: 0;
+        }
+        #capture-button {
+          margin-top: 10px;
+          padding: 10px 20px;
+          background-color: white !important;
+          color: #CF0A2C !important;
+          border: 1px solid #CF0A2C;
+          border-radius: 8px;
+          cursor: pointer;
+          transition: background-color 0.3s ease;
+          font-size: 14px;
+          width: auto;
+          text-align: center;
+        }
+        #capture-button:hover {
+          background-color: #CF0A2C !important;
+          color: white !important;
+        }
+        .upload-status {
+          text-align: center;
+          margin-top: 20px;
+        }
+        .upload-status svg {
+          width: 48px;
+          height: 48px;
+        }
+        .success { color: #CF0A2C; }
+        .error { color: #f44336; }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        .fade-in {
+          animation: fadeIn 0.5s ease-in-out;
+        }
+      </style>
+      <div class="upload-container">
+        <div id="webcam-container">
+          <video id="webcam-video" autoplay playsinline></video>
+          <button id="capture-button">
+            Capture Image
+          </button>
+        </div>
+        <div class="upload-status"></div>
+      </div>
+    `
+
+    const webcamContainer = uploadContainer.querySelector('#webcam-container')
+    const webcamVideo = uploadContainer.querySelector('#webcam-video')
+    const captureButton = uploadContainer.querySelector('#capture-button')
+
+    let webcamStream = null
+    async function startWebcam() {
+      webcamContainer.style.display = 'block'
+      try {
+        webcamStream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+        })
+        webcamVideo.srcObject = webcamStream
+      } catch (error) {
+        console.error('Error accessing webcam:', error)
+        webcamContainer.innerHTML = `<div class="webcam-error">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+    </svg>Error accessing your webcam,</br>please use file upload instead.</div>`
+      }
+    }
+    startWebcam()
+    function releaseWebcam() {
+      if (webcamStream) {
+        webcamStream.getTracks().forEach((track) => track.stop())
+        webcamStream = null
+        webcamVideo.srcObject = null
+      }
+    }
+
+    captureButton.addEventListener('click', () => {
+      const canvas = document.createElement('canvas')
+      canvas.width = webcamVideo.videoWidth
+      canvas.height = webcamVideo.videoHeight
+      canvas.getContext('2d').drawImage(webcamVideo, 0, 0)
+      canvas.toBlob((blob) => {
+        const file = new File([blob], 'webcam-capture.jpg', {
+          type: 'image/jpeg',
+        })
+        uploadFile(file)
+      }, 'image/jpeg')
+    })
+
+    function uploadFile(file) {
+      const uploadStatus = uploadContainer.querySelector('.upload-status')
+      const webcamContainer = uploadContainer.querySelector('#webcam-container')
+
+      uploadStatus.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="spinner"><path d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26L6.7 14.8c-.45-.83-.7-1.79-.7-2.8 0-3.31 2.69-6 6-6zm6.76 1.74L17.3 9.2c.44.84.7 1.79.7 2.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z"/></svg>
+        <p>Uploading...</p>
+      `
+      uploadStatus.classList.add('fade-in')
+      webcamContainer.style.display = 'none'
+
+      releaseWebcam()
+
+      var data = new FormData()
+      data.append('file', file)
+
+      fetch('https://tmpfiles.org/api/v1/upload', {
+        method: 'POST',
+        body: data,
+      })
+        .then((response) => {
+          if (response.ok) {
+            return response.json()
+          } else {
+            throw new Error('Upload failed: ' + response.statusText)
+          }
+        })
+        .then((result) => {
+          uploadStatus.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="success"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>
+            <p>Upload successful!</p>
+          `
+          console.log('File uploaded:', result.data.url)
+          window.voiceflow.chat.interact({
+            type: 'complete',
+            payload: {
+              file: result.data.url.replace(
+                'https://tmpfiles.org/',
+                'https://tmpfiles.org/dl/'
+              ),
+            },
+          })
+        })
+        .catch((error) => {
+          console.error(error)
+          uploadStatus.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="error"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+            <p>Error during upload</p>
+          `
+          window.voiceflow.chat.interact({
+            type: 'error',
+          })
+        })
+    }
+
+    element.appendChild(uploadContainer)
+  },
+}
+
 // This extension displays a gift card with a specified amount and code
 export const GiftCardDisplayExtension = {
   name: 'GiftCardDisplay',
