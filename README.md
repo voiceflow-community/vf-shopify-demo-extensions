@@ -60,6 +60,7 @@ Note: Make sure you've set up your `.env` file correctly, including the `VOICEFL
 6. **ProductUploadExtension**: Allows product upload using file upload or webcam capture.
 7. **EmailVerificationExtension**: Handles email verification by sending a code and verifying user input.
 8. **ReturnRequestExtension**: Handles return requests for a Shopify order.
+9. **DemoUploadExtension**: Upload a webcam capture to your agent.
 
 ## Using the Extensions with the Chat Widget
 
@@ -69,7 +70,7 @@ To use these extensions in your Voiceflow chat widget, include the following sni
 ```html
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.3.1/dist/jsQR.min.js"></script>
     <script type="module">
-      import { EmailVerificationExtension, ProductUploadExtension, QRCodeScannerExtension, ShopifyOrderListExtension, ReturnRequestExtension, WaitingAnimationExtension, DoneAnimationExtension, GiftCardDisplayExtension } from 'SERVER_URL/scripts/extensions.js';
+      import { DemoUploadExtension, EmailVerificationExtension, ProductUploadExtension, QRCodeScannerExtension, ShopifyOrderListExtension, ReturnRequestExtension, WaitingAnimationExtension, DoneAnimationExtension, GiftCardDisplayExtension } from 'SERVER_URL/scripts/extensions.js';
       (function (d, t) {
         var v = d.createElement(t),
           s = d.getElementsByTagName(t)[0];
@@ -86,6 +87,7 @@ To use these extensions in your Voiceflow chat widget, include the following sni
             assistant: {
               stylesheet: "SERVER_URL/styles/widget.css",
               extensions: [
+                DemoUploadExtension,
                 EmailVerificationExtension,
                 ProductUploadExtension,
                 QRCodeScannerExtension,
