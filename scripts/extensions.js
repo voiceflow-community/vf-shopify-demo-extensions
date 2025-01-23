@@ -5,7 +5,7 @@ export const DemoUploadExtension = {
   name: 'DemoUpload',
   type: 'response',
   match: ({ trace }) =>
-    trace.payload?.name === 'ext_demoUpload',
+    trace.type === 'ext_demoUpload' || trace.payload?.name === 'ext_demoUpload',
   render: ({ trace, element }) => {
     const uploadContainer = document.createElement('div')
     uploadContainer.innerHTML = `
@@ -239,7 +239,7 @@ export const GiftCardDisplayExtension = {
   name: 'GiftCardDisplay',
   type: 'response',
   match: ({ trace }) =>
-    trace.payload?.name === 'ext_giftCardDisplay',
+    trace.type === 'ext_giftCardDisplay' || trace.payload?.name === 'ext_giftCardDisplay',
   render: ({ trace, element }) => {
     const amount = trace.payload.amount || '20'
     const code = (trace.payload.code || 'G9FD5FEG8HDC8A94').toUpperCase()
@@ -335,7 +335,7 @@ export const WaitingAnimationExtension = {
   name: 'WaitingAnimation',
   type: 'response',
   match: ({ trace }) =>
-    trace.payload?.name === 'ext_waitingAnimation',
+    trace.type === 'ext_waitingAnimation' || trace.payload?.name === 'ext_waitingAnimation',
   render: async ({ trace, element }) => {
     window.vf_done = true
     await new Promise((resolve) => setTimeout(resolve, 250))
@@ -431,7 +431,7 @@ export const DoneAnimationExtension = {
   name: 'DoneAnimation',
   type: 'response',
   match: ({ trace }) =>
-    trace.payload?.name === 'ext_doneAnimation',
+    trace.type === 'ext_doneAnimation' || trace.payload?.name === 'ext_doneAnimation',
   render: async ({ trace, element }) => {
     window.vf_done = true
     await new Promise((resolve) => setTimeout(resolve, 250))
@@ -447,7 +447,7 @@ export const ShopifyOrderListExtension = {
   name: 'ShopifyOrderList',
   type: 'response',
   match: ({ trace }) =>
-    trace.payload?.name === 'ext_shopifyOrderList',
+    trace.type === 'ext_shopifyOrderList' || trace.payload?.name === 'ext_shopifyOrderList',
   render: ({ trace, element }) => {
     const orders = trace.payload.orders || []
     const orderIds = trace.payload.orderIds || []
@@ -598,7 +598,7 @@ export const QRCodeScannerExtension = {
   name: 'QRCodeScanner',
   type: 'response',
   match: ({ trace }) =>
-    trace.payload?.name === 'ext_qrCodeScanner',
+    trace.type === 'ext_qrCodeScanner' || trace.payload?.name === 'ext_qrCodeScanner',
   render: ({ trace, element }) => {
     const scannerContainer = document.createElement('div')
     scannerContainer.innerHTML = `
@@ -780,7 +780,7 @@ export const ProductUploadExtension = {
   name: 'ProductUpload',
   type: 'response',
   match: ({ trace }) =>
-    trace.payload?.name === 'ext_productUpload',
+    trace.type === 'ext_productUpload' || trace.payload?.name === 'ext_productUpload',
   render: ({ trace, element }) => {
     const uploadContainer = document.createElement('div')
     uploadContainer.innerHTML = `
@@ -1055,7 +1055,7 @@ export const EmailVerificationExtension = {
   name: 'EmailVerification',
   type: 'response',
   match: ({ trace }) =>
-    trace.payload?.name === 'ext_verify',
+    trace.type === 'ext_verify' || trace.payload?.name === 'ext_verify',
   render: async ({ trace, element }) => {
     const email = trace.payload?.email || null
 
@@ -1322,7 +1322,7 @@ export const ReturnRequestExtension = {
   name: 'ReturnRequest',
   type: 'response',
   match: ({ trace }) =>
-    trace.payload?.name === 'ext_returnRequest',
+    trace.type === 'ext_returnRequest' || trace.payload?.name === 'ext_returnRequest',
   render: ({ trace, element }) => {
     const { order_id, items } = trace.payload
     const defaultImageURL =
