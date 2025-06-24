@@ -139,3 +139,5 @@ The server provides the following endpoints:
 4. `/check-verification`: Handles checking verification codes
 
 For more details on the server implementation, refer to the `server.ts` file.
+
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=voiceflow-community_vf-shopify-demo-extensions&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=voiceflow-community_vf-shopify-demo-extensions)
